@@ -76,7 +76,7 @@ All endpoints apply the following checks:
 }
 ```
 
-** Export QR Code as PNG**
+**Export QR Code as PNG**
 ```
 echo "iVBORw0KGgoAAAANSUhEUgAAAPYAAAD2..." | base64 --decode > qrcode.png
 ```
