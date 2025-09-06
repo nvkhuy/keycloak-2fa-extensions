@@ -1,0 +1,13 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.7
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: [ "start-dev" ]
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount your built extension JAR into the providers folder
+      - ./target/two-factor-auth-rest-api.jar:/opt/keycloak/providers/two-factor-auth-rest-api.jar
