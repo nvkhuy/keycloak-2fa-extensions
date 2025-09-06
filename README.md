@@ -14,32 +14,35 @@ This project extends **Keycloak** with a custom `RealmResourceProvider` to suppo
 
 ### Flow
 
-```
-sequenceDiagram
-    participant ClientApp as Client (Service Account)
-    participant API as 2FA REST API (manage-2fa)
-    participant Keycloak as Keycloak Server
-    participant User as Target User
+<details>
+<summary>▶️ Show 2FA API Flow Diagram</summary>
 
-    ClientApp->>API: GET /manage-2fa/{user_id}/generate-2fa <br/> (Bearer token with manage-2fa)
-    API->>Keycloak: Validate client permission + fetch user
-    Keycloak-->>API: TOTP Secret + QR Code
-    API-->>ClientApp: { encodedTotpSecret, totpSecretQRCode }
+    sequenceDiagram
+        participant ClientApp as Client (Service Account)
+        participant API as 2FA REST API (manage-2fa)
+        participant Keycloak as Keycloak Server
+        participant User as Target User
+    
+        ClientApp->>API: GET /manage-2fa/{user_id}/generate-2fa <br/> (Bearer token with manage-2fa)
+        API->>Keycloak: Validate client permission + fetch user
+        Keycloak-->>API: TOTP Secret + QR Code
+        API-->>ClientApp: { encodedTotpSecret, totpSecretQRCode }
+    
+        Note over ClientApp,User: Client securely shares QR/secret with User<br/>User scans secret into Authenticator app
+    
+        ClientApp->>API: POST /manage-2fa/{user_id}/submit-2fa <br/> { deviceName, totpInitialCode, encodedTotpSecret }
+        API->>Keycloak: Validate code against secret & register credential
+        Keycloak-->>API: Success
+        API-->>ClientApp: 204 No Content
+    
+        Note over User: User now has TOTP-based 2FA enabled
+    
+        ClientApp->>API: POST /manage-2fa/{user_id}/validate-2fa-code <br/> { deviceName, totpCode }
+        API->>Keycloak: Verify TOTP code
+        Keycloak-->>API: Valid/Invalid
+        API-->>ClientApp: 204 No Content (valid) / 400 Error (invalid)
 
-    Note over ClientApp,User: Client securely shares QR/secret with User<br/>User scans secret into Authenticator app
-
-    ClientApp->>API: POST /manage-2fa/{user_id}/submit-2fa <br/> { deviceName, totpInitialCode, encodedTotpSecret }
-    API->>Keycloak: Validate code against secret & register credential
-    Keycloak-->>API: Success
-    API-->>ClientApp: 204 No Content
-
-    Note over User: User now has TOTP-based 2FA enabled
-
-    ClientApp->>API: POST /manage-2fa/{user_id}/validate-2fa-code <br/> { deviceName, totpCode }
-    API->>Keycloak: Verify TOTP code
-    Keycloak-->>API: Valid/Invalid
-    API-->>ClientApp: 204 No Content (valid) / 400 Error (invalid)
-```
+</details>
 
 ![2FA Flow](flow.png)
 
